@@ -1,284 +1,110 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Download, ExternalLink, Link as LinkIcon, Loader2, Smartphone, Terminal, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react';
+import type { AppBuilderRequest, AppBuilderResponse } from './types';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Smartphone, Link as LinkIcon, Download, Loader2, AlertCircle, Settings, CheckCircle2 } from 'lucide-react';
-import { AppBuilderResponse } from './types';
+type LogType = 'info' | 'success' | 'error';
+type Log = { id: number; type: LogType; message: string };
 
 export default function App() {
   const [url, setUrl] = useState('');
   const [appName, setAppName] = useState('');
-  const [isBuilding, setIsBuilding] = useState(false);
-  const [response, setResponse] = useState<AppBuilderResponse | null>(null);
+  const [orientation, setOrientation] = useState<AppBuilderRequest['orientation']>('portrait');
+  const [building, setBuilding] = useState(false);
+  const [result, setResult] = useState<AppBuilderResponse | null>(null);
+  const [logs, setLogs] = useState<Log[]>([]);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const id = useRef(0);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url || !appName) return;
+  const log = useCallback((type: LogType, message: string) => {
+    setLogs((items) => [...items, { id: ++id.current, type, message }]);
+  }, []);
 
-    setIsBuilding(true);
-    setResponse(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
+  const poll = useCallback(async (runId: number) => {
     try {
-      const res = await fetch('/api/build-apk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, appName }),
-      });
-      
-      const data = await res.json();
-      
-      if (data.error) {
-        setResponse(data);
-        setIsBuilding(false);
-        return;
-      }
-
-      if (data.runId) {
-        // Start polling
-        setResponse({ status: 'pending', message: 'Build started on GitHub Actions...' });
-        pollStatus(data.runId);
-      }
-    } catch (err) {
-      setResponse({ error: 'A network error occurred while connecting to the build server.' });
-      setIsBuilding(false);
-    }
-  };
-
-  const pollStatus = async (runId: number) => {
-    try {
-      const res = await fetch(`/api/build-status/${runId}`);
-      const data = await res.json();
-
-      if (data.status === 'success' || data.status === 'failed') {
-        setResponse(data);
-        setIsBuilding(false);
+      const response = await fetch(`/api/build-status/${runId}`, { headers: { Accept: 'application/json' } });
+      const data = (await response.json()) as AppBuilderResponse;
+      if (!response.ok || data.error && !data.status) throw new Error(data.message || data.error || 'Status request failed');
+      setResult(data);
+      if (data.status === 'success') {
+        log('success', data.message || 'APK generated successfully.');
+        setBuilding(false);
+      } else if (data.status === 'failed' || data.status === 'cancelled') {
+        log('error', data.error || `Build ${data.status}.`);
+        setBuilding(false);
       } else {
-        setResponse({ status: data.status, message: data.message });
-        setTimeout(() => pollStatus(runId), 5000);
+        log('info', data.message || 'Build is still running...');
+        timer.current = setTimeout(() => void poll(runId), 5000);
       }
-    } catch (err) {
-      setResponse({ error: 'Lost connection while checking build status.' });
-      setIsBuilding(false);
+    } catch (error) {
+      log('error', error instanceof Error ? error.message : 'Connection to build server was lost.');
+      setResult({ error: 'Could not check build status.' });
+      setBuilding(false);
+    }
+  }, [log]);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (building || !url.trim() || !appName.trim()) return;
+    setBuilding(true); setResult(null); setLogs([]); id.current = 0;
+    log('info', `Starting ${appName.trim()} from ${url.trim()}`);
+    try {
+      const payload: AppBuilderRequest = { url: url.trim(), appName: appName.trim(), orientation };
+      const response = await fetch('/api/build-apk', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
+      const data = (await response.json()) as AppBuilderResponse;
+      if (!response.ok || data.error) {
+        log('error', data.error || data.message || 'Build request failed.'); setResult(data); setBuilding(false); return;
+      }
+      if (!data.runId) { log('error', 'GitHub accepted the request but no run ID was returned.'); setResult(data); setBuilding(false); return; }
+      setResult(data); log('success', `GitHub Actions run #${data.runId} started.`); void poll(data.runId);
+    } catch (error) {
+      log('error', error instanceof Error ? error.message : 'Network error.');
+      setResult({ error: 'Unable to connect to the build server.' }); setBuilding(false);
     }
   };
+
+  const reset = () => { if (timer.current) clearTimeout(timer.current); setBuilding(false); setResult(null); setLogs([]); };
+  const statusText = result?.status === 'success' ? 'Build complete' : building ? 'Building APK…' : 'Ready';
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
-      <header className="h-20 bg-white border-b border-slate-200 px-6 sm:px-10 flex items-center justify-between shrink-0">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+      <header className="h-20 bg-white border-b border-slate-200 px-5 sm:px-10 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-            <Smartphone className="w-6 h-6 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-800">
-            Web2APK<span className="text-indigo-600">Pro</span>
-          </h1>
+          <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100"><Smartphone className="text-white" size={22}/></div>
+          <div><h1 className="text-xl sm:text-2xl font-bold">Web2APK<span className="text-indigo-600">Pro</span></h1><p className="hidden sm:block text-[10px] uppercase tracking-widest text-slate-400">URL → Android APK</p></div>
         </div>
-        <nav className="hidden md:flex gap-8 text-sm font-medium text-slate-500">
-          <a className="text-indigo-600 border-b-2 border-indigo-600 pb-1 cursor-pointer">Dashboard</a>
-          <a className="cursor-pointer hover:text-slate-800 transition-colors">Build History</a>
-          <a className="cursor-pointer hover:text-slate-800 transition-colors">Documentation</a>
-        </nav>
-        <div className="flex items-center gap-4">
-          <div className="text-right hidden sm:block">
-            <p className="text-xs text-slate-400">Build Balance</p>
-            <p className="text-sm font-bold text-slate-700">Unlimited</p>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden">
-            <Settings className="w-5 h-5 text-slate-500" />
-          </div>
-        </div>
+        <div className="flex items-center gap-3 text-sm"><span className={`h-2 w-2 rounded-full ${building ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'}`}/><span className="hidden sm:inline text-slate-500">{statusText}</span></div>
       </header>
 
-      <main className="flex-1 p-4 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto w-full">
-        <div className="lg:col-span-7 flex flex-col gap-6">
-          <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 flex-1 flex flex-col justify-center">
-            <div className="max-w-md mx-auto w-full">
-              <h2 className="text-3xl font-bold text-slate-800 mb-2">Create New App</h2>
-              <p className="text-slate-500 mb-8">Transform any URL into a high-performance Android package.</p>
-              
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="url" className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                    Website URL
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                      <LinkIcon className="h-4 w-4" strokeWidth={2} />
-                    </div>
-                    <input
-                      id="url"
-                      type="url"
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      placeholder="https://example.com"
-                      className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                      required
-                      disabled={isBuilding}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="appName" className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                      App Name
-                    </label>
-                    <input
-                      id="appName"
-                      type="text"
-                      value={appName}
-                      onChange={(e) => setAppName(e.target.value)}
-                      placeholder="My App"
-                      className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                      required
-                      disabled={isBuilding}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                      Orientation
-                    </label>
-                    <select className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl appearance-none outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-800" disabled={isBuilding}>
-                      <option>Portrait (Default)</option>
-                      <option>Landscape</option>
-                      <option>Auto-Rotate</option>
-                    </select>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isBuilding || !url || !appName}
-                  className="w-full py-4 mt-2 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100"
-                >
-                  {isBuilding ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Building APK...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Settings className="w-5 h-5" />
-                      <span>Build APK Now</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-          </section>
-
-          <section className="bg-slate-900 rounded-3xl p-6 shadow-2xl h-48 overflow-y-auto font-mono text-sm relative">
-            <div className="flex items-center gap-2 mb-4 border-b border-slate-800 pb-2 sticky top-0 bg-slate-900 z-10">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span className="text-slate-500 text-xs ml-2">Build Console</span>
-            </div>
-            <div className="text-emerald-400 space-y-1">
-              {!isBuilding && !response && (
-                 <p><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> <span className="text-white">Ready for next build session.</span></p>
-              )}
-              {isBuilding && (
-                <>
-                  <p><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> Initializing cloud build engine on GitHub Actions...</p>
-                  <p className="animate-pulse"><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> {response?.message || 'Processing build...'}</p>
-                </>
-              )}
-              {response && response.error && (
-                 <div className="text-red-400">
-                   <p><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> ERROR: {response.error}</p>
-                   {response.message && <p className="text-red-300 mt-1 pl-[104px] sm:pl-[120px]">{response.message}</p>}
-                 </div>
-              )}
-              {response && response.status === 'success' && !response.error && (
-                 <div>
-                   <p className="text-emerald-400"><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> SUCCESS: {response.message}</p>
-                   {response.downloadUrl && response.downloadUrl !== '#' && (
-                     <a 
-                       href={response.downloadUrl}
-                       target="_blank"
-                       rel="noreferrer"
-                       className="inline-flex items-center gap-2 mt-2 px-3 py-1 bg-emerald-900/50 hover:bg-emerald-800/80 rounded border border-emerald-800 text-emerald-300 transition-colors"
-                     >
-                       <Download className="w-3 h-3" /> Download APK
-                     </a>
-                   )}
-                 </div>
-              )}
-              <p className="animate-pulse">_</p>
-            </div>
-          </section>
-        </div>
+      <main className="w-full max-w-7xl mx-auto flex-1 p-4 sm:p-8 grid lg:grid-cols-12 gap-6">
+        <section className="lg:col-span-7 bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sm:p-9">
+          <div className="max-w-xl mx-auto">
+            <h2 className="text-3xl font-bold mb-2">Create New App</h2>
+            <p className="text-slate-500 mb-8">Enter a website and GitHub Actions will build the Android package for you.</p>
+            <form onSubmit={submit} className="space-y-5">
+              <label className="block"><span className="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Website URL</span><div className="relative"><LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={17}/><input value={url} onChange={(e) => setUrl(e.target.value)} type="url" required disabled={building} placeholder="https://example.com" className="w-full pl-11 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"/></div></label>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <label className="block"><span className="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">App Name</span><input value={appName} onChange={(e) => setAppName(e.target.value)} maxLength={30} minLength={2} required disabled={building} placeholder="My App" className="w-full px-4 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"/></label>
+                <label className="block"><span className="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Orientation</span><select value={orientation} onChange={(e) => setOrientation(e.target.value as AppBuilderRequest['orientation'])} disabled={building} className="w-full px-4 py-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"><option value="portrait">Portrait</option><option value="landscape">Landscape</option><option value="auto">Auto-Rotate</option></select></label>
+              </div>
+              <button disabled={building || !url || !appName} className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-100 disabled:opacity-60 flex justify-center items-center gap-3 transition-colors">{building ? <><Loader2 className="animate-spin" size={20}/>Building APK…</> : <><Smartphone size={20}/>Build APK Now</>}</button>
+            </form>
+            {result && <div className={`mt-6 rounded-2xl border p-4 ${result.status === 'success' ? 'border-emerald-200 bg-emerald-50' : result.error ? 'border-red-200 bg-red-50' : 'border-indigo-200 bg-indigo-50'}`}>
+              <div className="flex gap-3"><div className="mt-0.5">{result.status === 'success' ? <CheckCircle2 className="text-emerald-600" size={20}/> : result.error ? <AlertCircle className="text-red-600" size={20}/> : <Loader2 className="text-indigo-600 animate-spin" size={20}/>}</div><div className="min-w-0 flex-1"><p className="font-semibold">{result.error || result.message || 'Processing…'}</p>{result.runUrl && <a href={result.runUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 mt-2 text-sm text-indigo-600 hover:underline">Open GitHub run <ExternalLink size={13}/></a>}{result.downloadUrl && <a href={result.downloadUrl} target="_blank" rel="noreferrer" className="ml-4 inline-flex items-center gap-1 mt-2 text-sm font-bold text-emerald-700 hover:underline"><Download size={14}/> Download artifact</a>}</div></div>
+            </div>}
+          </div>
+        </section>
 
         <aside className="lg:col-span-5 flex flex-col gap-6">
-          <div className="bg-indigo-600 rounded-3xl p-6 text-white relative overflow-hidden">
-            <div className="relative z-10">
-              <h3 className="text-xl font-bold mb-2">Pro Feature: Live Update</h3>
-              <p className="text-indigo-100 text-sm opacity-90">Updates to your website are reflected in the app instantly without reinstalling the APK.</p>
-            </div>
-            <Smartphone className="absolute -right-4 -bottom-4 w-32 h-32 text-indigo-500 opacity-20" strokeWidth={1} />
-          </div>
-
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex-1">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center justify-between">
-              <span>Recent Builds</span>
-              <span className="text-xs text-indigo-600 cursor-pointer hover:underline">View All</span>
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-xs font-bold text-slate-500">SHOP</div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-700">mystore.com</p>
-                    <p className="text-[10px] text-slate-400 uppercase font-semibold">Created 2h ago</p>
-                  </div>
-                </div>
-                <button className="p-2 hover:bg-slate-200 rounded-lg text-indigo-600 transition-colors">
-                  <Download className="w-4 h-4" strokeWidth={2} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-xs font-bold text-slate-500">PORT</div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-700">portfolio-v3.io</p>
-                    <p className="text-[10px] text-slate-400 uppercase font-semibold">Created 1d ago</p>
-                  </div>
-                </div>
-                <button className="p-2 hover:bg-slate-200 rounded-lg text-indigo-600 transition-colors">
-                  <Download className="w-4 h-4" strokeWidth={2} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl opacity-60">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-xs font-bold text-slate-500">CRM</div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-700">internal-crm.app</p>
-                    <p className="text-[10px] text-slate-400 uppercase font-semibold">Created 5d ago</p>
-                  </div>
-                </div>
-                <button className="p-2 hover:bg-slate-200 rounded-lg text-slate-400 transition-colors">
-                  <Download className="w-4 h-4" strokeWidth={2} />
-                </button>
-              </div>
-            </div>
-          </div>
+          <section className="rounded-3xl bg-slate-900 text-white p-5 sm:p-6 min-h-[250px] flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3"><div className="flex items-center gap-2"><Terminal size={16}/><span className="text-sm font-semibold">Build Console</span></div><button onClick={reset} className="text-slate-500 hover:text-white" title="Clear console"><RotateCcw size={15}/></button></div>
+            <div className="font-mono text-xs sm:text-sm mt-4 space-y-2 overflow-auto max-h-64">{logs.length === 0 ? <p className="text-slate-500">Ready for next build session.</p> : logs.map((entry) => <p key={entry.id} className={entry.type === 'error' ? 'text-red-400' : entry.type === 'success' ? 'text-emerald-400' : 'text-slate-300'}><span className="text-slate-600">[{String(entry.id).padStart(2, '0')}]</span> {entry.message}</p>)}</div>
+          </section>
+          <section className="bg-indigo-600 text-white rounded-3xl p-6 flex-1"><h3 className="font-bold text-xl mb-2">How it works</h3><ol className="text-sm text-indigo-100 space-y-3 list-decimal list-inside"><li>Enter your public website URL.</li><li>Choose the app name and orientation.</li><li>GitHub Actions builds the TWA package.</li><li>Download the generated APK artifact.</li></ol></section>
         </aside>
       </main>
-      
-      <footer className="h-12 bg-white border-t border-slate-200 px-6 sm:px-8 flex items-center justify-between shrink-0 text-[11px] text-slate-400 font-medium uppercase tracking-widest mt-auto">
-        <div className="flex gap-4 sm:gap-6">
-          <span>Engine v4.2.0-Stable</span>
-          <span className="hidden sm:inline">Server Status: Online</span>
-        </div>
-        <div>
-          &copy; {new Date().getFullYear()} Web2APK Software Inc.
-        </div>
-      </footer>
+      <footer className="border-t border-slate-200 bg-white px-5 sm:px-8 py-4 text-xs text-slate-400 flex justify-between"><span>URL2APK · Build Engine</span><span>GitHub Actions powered</span></footer>
     </div>
   );
 }
-
