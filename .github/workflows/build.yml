@@ -13,26 +13,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install Bubblewrap
-        run: npm install -g @bubblewrap/cli
-
-      - name: Generate Key
-        run: |
-          keytool -genkey -v -keystore key.keystore -alias my-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=US"
-
       - name: Create TWA Manifest
         run: |
+          mkdir pwa-project
+          cd pwa-project
           HOST=$(echo "${{ github.event.inputs.url }}" | sed -e 's|^[^/]*//||' -e 's|/.*$||')
           PKG="com.web2apk.$(echo $HOST | tr -dc 'a-zA-Z0-9' | tr '[:upper:]' '[:lower:]')"
           
@@ -55,13 +39,14 @@ jobs:
             "features": {}
           }
           MANIFEST
-          
-      - name: Build APK
-        run: |
-          ( sleep 2 && while true; do echo -ne '\n'; sleep 1; done ) | bubblewrap build --keyStore key.keystore --alias my-alias --keyPassword password --storePassword password --skipValidation
+
+      - name: Build APK using action
+        uses: sharadcodes/pwa-to-apk-action@v1
+        with:
+          project-root-folder: pwa-project
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: app-release-signed.apk
+          path: pwa-project/*.apk
