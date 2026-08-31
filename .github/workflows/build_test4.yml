@@ -1,0 +1,50 @@
+name: Build APK test 4
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup environment and Bubblewrap
+        run: |
+          mkdir -p ~/.bubblewrap
+          sudo mkdir -p $ANDROID_HOME/tools
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
+          npm i -g @bubblewrap/cli
+
+      - name: Create TWA Manifest
+        run: |
+          mkdir pwa-project
+          cd pwa-project
+          HOST="example.com"
+          PKG="com.example.app"
+          
+          cat > twa-manifest.json <<MANIFEST
+          {
+            "packageId": "$PKG",
+            "host": "$HOST",
+            "name": "Test App",
+            "launcherName": "Test App",
+            "appVersion": "1.0.0",
+            "appVersionCode": 1,
+            "themeColor": "#FFFFFF",
+            "navigationColor": "#000000",
+            "backgroundColor": "#FFFFFF",
+            "startUrl": "/",
+            "iconUrl": "https://www.pwabuilder.com/assets/icons/icon_512.png",
+            "maskableIconUrl": "https://www.pwabuilder.com/assets/icons/icon_512.png",
+            "splashScreenFadeOutDuration": 300,
+            "fallbackType": "customtabs",
+            "features": {}
+          }
+          MANIFEST
+
+      - name: Generate and Build APK
+        run: |
+          cd pwa-project
+          # Answer Y to regenerate project, 1.0.0 for version name, 1 for version code
+          cat > answers.txt <<ANSWERS
+          Y
+          1.0.0
+          1
+          ANSWERS
+          bubblewrap build < answers.txt || bubblewrap build < /dev/null
