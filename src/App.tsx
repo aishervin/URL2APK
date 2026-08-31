@@ -29,10 +29,38 @@ export default function App() {
       });
       
       const data = await res.json();
-      setResponse(data);
+      
+      if (data.error) {
+        setResponse(data);
+        setIsBuilding(false);
+        return;
+      }
+
+      if (data.runId) {
+        // Start polling
+        setResponse({ status: 'pending', message: 'Build started on GitHub Actions...' });
+        pollStatus(data.runId);
+      }
     } catch (err) {
       setResponse({ error: 'A network error occurred while connecting to the build server.' });
-    } finally {
+      setIsBuilding(false);
+    }
+  };
+
+  const pollStatus = async (runId: number) => {
+    try {
+      const res = await fetch(`/api/build-status/${runId}`);
+      const data = await res.json();
+
+      if (data.status === 'success' || data.status === 'failed') {
+        setResponse(data);
+        setIsBuilding(false);
+      } else {
+        setResponse({ status: data.status, message: data.message });
+        setTimeout(() => pollStatus(runId), 5000);
+      }
+    } catch (err) {
+      setResponse({ error: 'Lost connection while checking build status.' });
       setIsBuilding(false);
     }
   };
@@ -155,8 +183,8 @@ export default function App() {
               )}
               {isBuilding && (
                 <>
-                  <p><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> Initializing cloud build engine...</p>
-                  <p className="animate-pulse"><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> Fetching manifest data from {url || 'URL'}...</p>
+                  <p><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> Initializing cloud build engine on GitHub Actions...</p>
+                  <p className="animate-pulse"><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> {response?.message || 'Processing build...'}</p>
                 </>
               )}
               {response && response.error && (
@@ -165,7 +193,7 @@ export default function App() {
                    {response.message && <p className="text-red-300 mt-1 pl-[104px] sm:pl-[120px]">{response.message}</p>}
                  </div>
               )}
-              {response && !response.error && (
+              {response && response.status === 'success' && !response.error && (
                  <div>
                    <p className="text-emerald-400"><span className="text-slate-500">[{new Date().toLocaleTimeString()}]</span> SUCCESS: {response.message}</p>
                    {response.downloadUrl && response.downloadUrl !== '#' && (
