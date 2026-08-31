@@ -22,10 +22,12 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
 
       - name: Setup bubblewrap
         run: |
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
           npm i -g @bubblewrap/cli
 
       - name: Create TWA Manifest
@@ -58,8 +60,10 @@ jobs:
       - name: Build APK using bubblewrap
         run: |
           cd pwa-project
-          yes | bubblewrap build || true
+          bubblewrap build --skipPwaValidation --skipSigning
 
-      - name: Check APK
-        run: |
-          ls -la pwa-project/
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: pwa-project/*.apk
