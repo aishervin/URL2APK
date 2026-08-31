@@ -41,7 +41,7 @@ jobs:
           MANIFEST
 
       - name: Build APK using action
-        uses: sharadcodes/pwa-to-apk-action@master
+        uses: sharadcodes/pwa-to-apk-action@main
         with:
           project-root-folder: pwa-project
 
