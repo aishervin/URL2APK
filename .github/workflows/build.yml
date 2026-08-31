@@ -13,6 +13,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Setup bubblewrap
+        run: |
+          mkdir -p ~/.bubblewrap
+          sudo mkdir -p $ANDROID_HOME/tools
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
+          npm i -g @bubblewrap/cli
+
       - name: Create TWA Manifest
         run: |
           mkdir pwa-project
@@ -40,13 +47,16 @@ jobs:
           }
           MANIFEST
 
-      - name: Build APK using action
-        uses: sharadcodes/pwa-to-apk-action@main
-        with:
-          project-root-folder: pwa-project
+      - name: Build APK using bubblewrap
+        run: |
+          cd pwa-project
+          # By providing an empty string to yes, any unexpected prompt defaults. 
+          # Since the project is empty, it shouldn't prompt for version.
+          # Also passing --skipPwaValidation and --skipSigning for local tests.
+          yes "" | bubblewrap build --skipPwaValidation
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: ./*.apk
+          path: pwa-project/*.apk
