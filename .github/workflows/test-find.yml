@@ -1,0 +1,7 @@
+name: Find SDK
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: find $ANDROID_HOME -name "sdkmanager"
