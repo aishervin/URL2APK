@@ -58,7 +58,7 @@ jobs:
           
       - name: Build APK
         run: |
-          yes | bubblewrap build --keyStore key.keystore --alias my-alias --keyPassword password --storePassword password --skipValidation
+          ( sleep 2 && while true; do echo -ne '\n'; sleep 1; done ) | bubblewrap build --keyStore key.keystore --alias my-alias --keyPassword password --storePassword password --skipValidation
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
