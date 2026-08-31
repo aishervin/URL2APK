@@ -1,0 +1,7 @@
+name: Test LS
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ls -la $ANDROID_HOME
