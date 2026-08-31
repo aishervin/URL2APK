@@ -24,6 +24,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Fix Android SDK structure for Bubblewrap
+        run: |
+          mkdir -p $ANDROID_HOME/tools
+          cp -r $ANDROID_HOME/cmdline-tools/latest/bin $ANDROID_HOME/tools/
+          cp -r $ANDROID_HOME/cmdline-tools/latest/lib $ANDROID_HOME/tools/ || true
+
       - name: Setup bubblewrap
         run: |
           mkdir -p ~/.bubblewrap
