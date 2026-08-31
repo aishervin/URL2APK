@@ -1,0 +1,70 @@
+name: Build APK
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Website URL'
+        required: true
+      appName:
+        description: 'App Name'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Setup Android SDK config
+        run: |
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
+
+      - name: Generate Key
+        run: |
+          keytool -genkey -v -keystore key.keystore -alias my-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=US"
+
+      - name: Create TWA Manifest
+        run: |
+          HOST=$(echo "${{ github.event.inputs.url }}" | sed -e 's|^[^/]*//||' -e 's|/.*$||')
+          PKG="com.web2apk.$(echo $HOST | tr -dc 'a-zA-Z0-9' | tr '[:upper:]' '[:lower:]')"
+          
+          cat > twa-manifest.json <<MANIFEST
+          {
+            "packageId": "$PKG",
+            "host": "$HOST",
+            "name": "${{ github.event.inputs.appName }}",
+            "launcherName": "${{ github.event.inputs.appName }}",
+            "themeColor": "#FFFFFF",
+            "navigationColor": "#000000",
+            "backgroundColor": "#FFFFFF",
+            "startUrl": "/",
+            "iconUrl": "https://www.pwabuilder.com/assets/icons/icon_512.png",
+            "maskableIconUrl": "https://www.pwabuilder.com/assets/icons/icon_512.png",
+            "splashScreenFadeOutDuration": 300,
+            "fallbackType": "customtabs",
+            "features": {}
+          }
+          MANIFEST
+          
+      - name: Build APK
+        run: |
+          yes "" | bubblewrap build --keyStore key.keystore --alias my-alias --keyPassword password --storePassword password --skipValidation
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: app-release-signed.apk
