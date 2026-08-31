@@ -1,76 +1,152 @@
 name: Build APK
+
 on:
   workflow_dispatch:
     inputs:
       url:
-        description: 'Website URL'
+        description: Website URL
         required: true
+        type: string
       appName:
-        description: 'App Name'
+        description: App Name
         required: true
+        type: string
+      orientation:
+        description: Screen orientation
+        required: false
+        default: portrait
+        type: choice
+        options:
+          - portrait
+          - landscape
+          - auto
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      APP_URL: ${{ inputs.url }}
+      APP_NAME: ${{ inputs.appName }}
+      ORIENTATION: ${{ inputs.orientation }}
     steps:
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          node-version: '18'
-
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
-      - name: Fix Android SDK structure for Bubblewrap
-        run: |
-          mkdir -p $ANDROID_HOME/tools
-          cp -r $ANDROID_HOME/cmdline-tools/latest/bin $ANDROID_HOME/tools/
-          cp -r $ANDROID_HOME/cmdline-tools/latest/lib $ANDROID_HOME/tools/ || true
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Setup bubblewrap
-        run: |
-          mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
-          npm i -g @bubblewrap/cli
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
 
-      - name: Create TWA Manifest
+      - name: Generate Android project
+        shell: bash
         run: |
-          mkdir pwa-project
-          cd pwa-project
-          HOST=$(echo "${{ github.event.inputs.url }}" | sed -e 's|^[^/]*//||' -e 's|/.*$||')
-          PKG="com.web2apk.$(echo $HOST | tr -dc 'a-zA-Z0-9' | tr '[:upper:]' '[:lower:]')"
-          
-          cat > twa-manifest.json <<MANIFEST
-          {
-            "packageId": "$PKG",
-            "host": "$HOST",
-            "name": "${{ github.event.inputs.appName }}",
-            "launcherName": "${{ github.event.inputs.appName }}",
-            "appVersion": "1.0.0",
-            "appVersionCode": 1,
-            "themeColor": "#FFFFFF",
-            "navigationColor": "#000000",
-            "backgroundColor": "#FFFFFF",
-            "startUrl": "/",
-            "iconUrl": "https://www.pwabuilder.com/assets/icons/icon_512.png",
-            "maskableIconUrl": "https://www.pwabuilder.com/assets/icons/icon_512.png",
-            "splashScreenFadeOutDuration": 300,
-            "fallbackType": "customtabs",
-            "features": {}
-          }
-          MANIFEST
+          set -euo pipefail
+          mkdir -p app/src/main/java/com/url2apk/generated app/src/main/res/values app/src/main/res/mipmap-hdpi
 
-      - name: Build APK using bubblewrap
+          python3 - <<'PY'
+          import os, re, html
+          from pathlib import Path
+          url = os.environ['APP_URL'].strip()
+          name = os.environ['APP_NAME'].strip()
+          orientation = os.environ.get('ORIENTATION', 'portrait')
+          try:
+              from urllib.parse import urlparse
+              host = urlparse(url).hostname or 'app'
+          except Exception:
+              host = 'app'
+          safe = re.sub(r'[^a-z0-9]', '', host.lower())[:40] or 'app'
+          package = 'com.url2apk.' + safe
+          package_path = Path('app/src/main/java') / Path(package.replace('.', '/'))
+          package_path.mkdir(parents=True, exist_ok=True)
+          (package_path / 'MainActivity.java').write_text(f'''package {package};
+
+          import android.annotation.SuppressLint;
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.view.Window;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          public class MainActivity extends Activity {{
+            private WebView webView;
+            @SuppressLint("SetJavaScriptEnabled")
+            @Override public void onCreate(Bundle state) {{
+              super.onCreate(state);
+              requestWindowFeature(Window.FEATURE_NO_TITLE);
+              webView = new WebView(this);
+              webView.setWebViewClient(new WebViewClient() {{
+                @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {{ return false; }}
+              }});
+              webView.setWebChromeClient(new WebChromeClient());
+              webView.getSettings().setJavaScriptEnabled(true);
+              webView.getSettings().setDomStorageEnabled(true);
+              webView.getSettings().setDatabaseEnabled(true);
+              webView.getSettings().setAllowFileAccess(true);
+              webView.getSettings().setBuiltInZoomControls(false);
+              webView.loadUrl("{url.replace('\\', '\\\\').replace('"', '\\"')}");
+              setContentView(webView);
+            }}
+            @Override public void onBackPressed() {{ if (webView.canGoBack()) webView.goBack(); else super.onBackPressed(); }}
+          }}
+          ''')
+          (Path('app/src/main/res/values/strings.xml')).write_text(f'''<resources><string name="app_name">{html.escape(name)}</string></resources>''')
+          orient = {'portrait':'portrait','landscape':'landscape','auto':'unspecified'}.get(orientation, 'portrait')
+          manifest = f'''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <application android:theme="@style/AppTheme" android:label="@string/app_name" android:usesCleartextTraffic="false" android:hardwareAccelerated="true">
+              <activity android:name=".{package.split('.')[-1]}.MainActivity" android:screenOrientation="{orient}" android:exported="true">
+                <intent-filter>
+                  <action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/>
+                </intent-filter>
+              </activity>
+            </application>
+          </manifest>'''
+          # Activity lives in a generated package, so use its fully-qualified name.
+          manifest = manifest.replace(f'android:name=".{package.split(".")[-1]}.MainActivity"', f'android:name="{package}.MainActivity"')
+          Path('app/src/main/AndroidManifest.xml').write_text(manifest)
+          Path('app/src/main/res/values/styles.xml').write_text('''<resources><style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#4F46E5</item><item name="android:windowLightStatusBar">true</item><item name="android:navigationBarColor">#FFFFFF</item></style></resources>''')
+
+          Path('settings.gradle').write_text("pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }\nrootProject.name='URL2APK'\ninclude ':app'\n")
+          Path('build.gradle').write_text("plugins { id 'com.android.application' version '8.7.3' apply false }\n")
+          Path('app/build.gradle').write_text("""plugins { id 'com.android.application' }
+
+android { namespace = 'com.url2apk.generated'; compileSdk = 35
+  defaultConfig { applicationId = 'PLACEHOLDER_PACKAGE'; minSdk = 23; targetSdk = 35; versionCode = 1; versionName = '1.0.0' }
+}
+""")
+          p = Path('app/build.gradle')
+          p.write_text(p.read_text().replace('PLACEHOLDER_PACKAGE', package))
+          Path('gradle.properties').write_text('android.useAndroidX=true\nandroid.nonTransitiveRClass=true\n')
+          print(f'Generated package: {package}')
+          print(f'Generated app: {name}')
+          print(f'URL: {url}')
+          print(f'Orientation: {orientation}')
+          PY
+
+      - name: Build release APK
+        run: gradle --no-daemon :app:assembleRelease
+
+      - name: Verify APK
         run: |
-          cd pwa-project
-          yes | bubblewrap update || true
-          yes | bubblewrap build --skipPwaValidation --skipSigning
+          set -e
+          test -f app/build/outputs/apk/release/app-release-unsigned.apk
+          ls -lh app/build/outputs/apk/release/app-release-unsigned.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: pwa-project/*.apk
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: error
+          retention-days: 7
