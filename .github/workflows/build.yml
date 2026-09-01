@@ -22,7 +22,7 @@ on:
           - auto
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -32,6 +32,11 @@ jobs:
       APP_NAME: ${{ inputs.appName }}
       ORIENTATION: ${{ inputs.orientation }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -55,18 +60,23 @@ jobs:
           python3 - <<'PY'
           import os, re, html
           from pathlib import Path
+          from urllib.parse import urlparse
+
           url = os.environ['APP_URL'].strip()
           name = os.environ['APP_NAME'].strip()
           orientation = os.environ.get('ORIENTATION', 'portrait')
-          try:
-              from urllib.parse import urlparse
-              host = urlparse(url).hostname or 'app'
-          except Exception:
-              host = 'app'
+
+          parsed = urlparse(url)
+          if parsed.scheme not in ('http', 'https') or not parsed.hostname:
+              raise SystemExit('Invalid URL: use a full http:// or https:// URL')
+
+          host = parsed.hostname
           safe = re.sub(r'[^a-z0-9]', '', host.lower())[:40] or 'app'
           package = 'com.url2apk.' + safe
           package_path = Path('app/src/main/java') / Path(package.replace('.', '/'))
           package_path.mkdir(parents=True, exist_ok=True)
+
+          java_url = url.replace('\\', '\\\\').replace('"', '\\"')
           (package_path / 'MainActivity.java').write_text(f'''package {package};
 
           import android.annotation.SuppressLint;
@@ -80,13 +90,16 @@ jobs:
 
           public class MainActivity extends Activity {{
             private WebView webView;
+
             @SuppressLint("SetJavaScriptEnabled")
             @Override public void onCreate(Bundle state) {{
               super.onCreate(state);
               requestWindowFeature(Window.FEATURE_NO_TITLE);
               webView = new WebView(this);
               webView.setWebViewClient(new WebViewClient() {{
-                @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {{ return false; }}
+                @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {{
+                  return false;
+                }}
               }});
               webView.setWebChromeClient(new WebChromeClient());
               webView.getSettings().setJavaScriptEnabled(true);
@@ -94,59 +107,129 @@ jobs:
               webView.getSettings().setDatabaseEnabled(true);
               webView.getSettings().setAllowFileAccess(true);
               webView.getSettings().setBuiltInZoomControls(false);
-              webView.loadUrl("{url.replace('\\', '\\\\').replace('"', '\\"')}");
+              webView.loadUrl("{java_url}");
               setContentView(webView);
             }}
-            @Override public void onBackPressed() {{ if (webView.canGoBack()) webView.goBack(); else super.onBackPressed(); }}
+
+            @Override public void onBackPressed() {{
+              if (webView.canGoBack()) webView.goBack();
+              else super.onBackPressed();
+            }}
           }}
-          ''')
-          (Path('app/src/main/res/values/strings.xml')).write_text(f'''<resources><string name="app_name">{html.escape(name)}</string></resources>''')
+          ''', encoding='utf-8')
+
+          Path('app/src/main/res/values/strings.xml').write_text(
+              f'<resources><string name="app_name">{html.escape(name)}</string></resources>',
+              encoding='utf-8'
+          )
+
           orient = {'portrait':'portrait','landscape':'landscape','auto':'unspecified'}.get(orientation, 'portrait')
           manifest = f'''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
             <uses-permission android:name="android.permission.INTERNET" />
             <application android:theme="@style/AppTheme" android:label="@string/app_name" android:usesCleartextTraffic="false" android:hardwareAccelerated="true">
-              <activity android:name=".{package.split('.')[-1]}.MainActivity" android:screenOrientation="{orient}" android:exported="true">
+              <activity android:name="{package}.MainActivity" android:screenOrientation="{orient}" android:exported="true">
                 <intent-filter>
-                  <action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/>
+                  <action android:name="android.intent.action.MAIN" />
+                  <category android:name="android.intent.category.LAUNCHER" />
                 </intent-filter>
               </activity>
             </application>
           </manifest>'''
-          # Activity lives in a generated package, so use its fully-qualified name.
-          manifest = manifest.replace(f'android:name=".{package.split(".")[-1]}.MainActivity"', f'android:name="{package}.MainActivity"')
-          Path('app/src/main/AndroidManifest.xml').write_text(manifest)
-          Path('app/src/main/res/values/styles.xml').write_text('''<resources><style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#4F46E5</item><item name="android:windowLightStatusBar">true</item><item name="android:navigationBarColor">#FFFFFF</item></style></resources>''')
+          Path('app/src/main/AndroidManifest.xml').write_text(manifest, encoding='utf-8')
 
-          Path('settings.gradle').write_text("pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }\nrootProject.name='URL2APK'\ninclude ':app'\n")
-          Path('build.gradle').write_text("plugins { id 'com.android.application' version '8.7.3' apply false }\n")
-          Path('app/build.gradle').write_text("""plugins { id 'com.android.application' }
+          Path('app/src/main/res/values/styles.xml').write_text('''<resources>
+            <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+              <item name="android:fontFamily">sans</item>
+              <item name="android:colorAccent">#4F46E5</item>
+              <item name="android:windowLightStatusBar">true</item>
+              <item name="android:navigationBarColor">#FFFFFF</item>
+            </style>
+          </resources>''', encoding='utf-8')
 
-          android { namespace = 'com.url2apk.generated'; compileSdk = 35
-            defaultConfig { applicationId = 'PLACEHOLDER_PACKAGE'; minSdk = 23; targetSdk = 35; versionCode = 1; versionName = '1.0.0' }
-          }
-          """)
-          p = Path('app/build.gradle')
-          p.write_text(p.read_text().replace('PLACEHOLDER_PACKAGE', package))
-          Path('gradle.properties').write_text('android.useAndroidX=true\nandroid.nonTransitiveRClass=true\n')
+          Path('settings.gradle').write_text("""pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
+rootProject.name='URL2APK'
+include ':app'
+""", encoding='utf-8')
+
+          Path('build.gradle').write_text("plugins { id 'com.android.application' version '8.7.3' apply false }\n", encoding='utf-8')
+          Path('app/build.gradle').write_text(f"""plugins {{ id 'com.android.application' }}
+
+          android {{
+            namespace = 'com.url2apk.generated'
+            compileSdk = 35
+            defaultConfig {{
+              applicationId = '{package}'
+              minSdk = 23
+              targetSdk = 35
+              versionCode = 1
+              versionName = '1.0.0'
+            }}
+          }}
+          """, encoding='utf-8')
+          Path('gradle.properties').write_text('android.useAndroidX=true\nandroid.nonTransitiveRClass=true\n', encoding='utf-8')
+
           print(f'Generated package: {package}')
           print(f'Generated app: {name}')
           print(f'URL: {url}')
           print(f'Orientation: {orientation}')
           PY
 
-      - name: Build release APK
-        run: gradle --no-daemon :app:assembleRelease
+      - name: Build signed debug APK
+        run: gradle --no-daemon :app:assembleDebug
 
-      - name: Verify APK
+      - name: Verify APK is valid and signed
+        shell: bash
         run: |
-          set -e
-          test -f app/build/outputs/apk/release/app-release-unsigned.apk
-          ls -lh app/build/outputs/apk/release/app-release-unsigned.apk
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          SIZE=$(stat -c%s "$APK")
+          echo "APK size: $SIZE bytes"
+          if [ "$SIZE" -lt 10000 ]; then
+            echo "APK is suspiciously small"
+            exit 1
+          fi
+          command -v apksigner
+          apksigner verify --verbose "$APK"
+          unzip -t "$APK" >/dev/null
+          echo "APK verification passed"
 
-      - name: Upload APK
+      - name: Prepare repository download
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/URL2APK-latest.apk
+          cat > downloads/README.md <<EOF
+          # URL2APK Download
+
+          The latest verified, signed debug APK is available here:
+
+          **[Download URL2APK-latest.apk](./URL2APK-latest.apk)**
+
+          This file is generated by the GitHub Actions build workflow and replaced on each successful build.
+          EOF
+          ls -lh downloads/URL2APK-latest.apk
+
+      - name: Commit APK to repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add downloads/URL2APK-latest.apk downloads/README.md
+          if git diff --cached --quiet; then
+            echo "No repository download changes to commit"
+            exit 0
+          fi
+          git commit -m "Publish verified URL2APK APK"
+          git push origin HEAD:main
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          name: URL2APK-signed
+          path: downloads/URL2APK-latest.apk
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
