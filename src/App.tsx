@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Download, ExternalLink, Link as LinkIcon, Loader2, Smartphone, Terminal, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react';
 import type { AppBuilderRequest, AppBuilderResponse } from './types';
 
