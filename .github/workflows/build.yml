@@ -121,10 +121,10 @@ jobs:
           Path('build.gradle').write_text("plugins { id 'com.android.application' version '8.7.3' apply false }\n")
           Path('app/build.gradle').write_text("""plugins { id 'com.android.application' }
 
-android { namespace = 'com.url2apk.generated'; compileSdk = 35
-  defaultConfig { applicationId = 'PLACEHOLDER_PACKAGE'; minSdk = 23; targetSdk = 35; versionCode = 1; versionName = '1.0.0' }
-}
-""")
+          android { namespace = 'com.url2apk.generated'; compileSdk = 35
+            defaultConfig { applicationId = 'PLACEHOLDER_PACKAGE'; minSdk = 23; targetSdk = 35; versionCode = 1; versionName = '1.0.0' }
+          }
+          """)
           p = Path('app/build.gradle')
           p.write_text(p.read_text().replace('PLACEHOLDER_PACKAGE', package))
           Path('gradle.properties').write_text('android.useAndroidX=true\nandroid.nonTransitiveRClass=true\n')
