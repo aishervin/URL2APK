@@ -175,7 +175,7 @@ jobs:
           PY
 
       - name: Build signed debug APK
-        run: gradle --no-daemon :app:assembleDebug
+        run: gradle --no-daemon --info :app:assembleDebug 2>&1 | tail -100
 
       - name: Verify APK is valid and signed
         shell: bash
@@ -185,10 +185,17 @@ jobs:
           test -f "$APK"
           SIZE=$(stat -c%s "$APK")
           echo "APK size: $SIZE bytes"
-          if [ "$SIZE" -lt 10000 ]; then
-            echo "APK is suspiciously small"
+          
+          echo "APK contents:"
+          unzip -l "$APK" | head -20
+          
+          if [ "$SIZE" -lt 100000 ]; then
+            echo "ERROR: APK is suspiciously small (< 100KB)"
+            echo "Build directory contents:"
+            find app/build/outputs -type f -ls
             exit 1
           fi
+          
           command -v apksigner
           apksigner verify --verbose "$APK"
           unzip -t "$APK" >/dev/null
