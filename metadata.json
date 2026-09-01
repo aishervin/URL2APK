@@ -1,6 +1,6 @@
 {
-  "name": "Web2APK Converter",
-  "description": "Convert any website into a fully functional Android APK file.",
+  "name": "SHΞN™DROID Studio",
+  "description": "AI-Powered Android App Creation Studio: Code Editor, Gemini AI Assistant, GitHub Workspace, Assets Manager, & APK Generator.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

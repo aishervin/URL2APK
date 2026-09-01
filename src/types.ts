@@ -1,9 +1,23 @@
 export type Orientation = 'portrait' | 'landscape' | 'auto';
 
+export type StudioTab = 'dashboard' | 'editor' | 'assets' | 'github' | 'build' | 'ai-assistant';
+
+export type CreationMode = 'website' | 'source' | 'ai-gen' | 'import' | 'hybrid';
+
+export interface ProjectFile {
+  path: string;
+  name: string;
+  type: 'html' | 'css' | 'js' | 'ts' | 'py' | 'json' | 'image' | 'asset' | 'other';
+  content: string;
+  isModified?: boolean;
+}
+
 export interface AppBuilderRequest {
-  url: string;
+  url?: string;
   appName: string;
   orientation?: Orientation;
+  sourceFiles?: Record<string, string>;
+  mode?: CreationMode;
 }
 
 export interface AppBuilderResponse {
@@ -22,6 +36,7 @@ export interface GitHubWorkflowRun {
   status: string;
   conclusion: string | null;
   html_url: string;
+  created_at: string;
 }
 
 export interface GitHubArtifact {
@@ -35,4 +50,10 @@ export interface GitHubArtifact {
 export interface GitHubArtifactsResponse {
   total_count: number;
   artifacts: GitHubArtifact[];
+}
+
+export interface GeminiModelInfo {
+  name: string;
+  displayName: string;
+  description?: string;
 }
