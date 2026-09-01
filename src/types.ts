@@ -11,6 +11,7 @@ export interface AppBuilderResponse {
   message?: string;
   error?: string;
   downloadUrl?: string;
+  directApkUrl?: string;
   runId?: number;
   artifactId?: number;
   runUrl?: string;

@@ -105,7 +105,7 @@ app.get('/api/build-status/:runId', async (req: Request, res: Response<AppBuilde
     if (!artifact) return res.json({ status: 'failed', error: 'Build succeeded but no APK artifact was found.', runId, runUrl: run.html_url });
 
     const downloadUrl = `/api/download-artifact?url=${encodeURIComponent(artifact.archive_download_url)}`;
-    return res.json({ status: 'success', message: `APK generated successfully (${(artifact.size_in_bytes / 1048576).toFixed(2)} MB).`, downloadUrl, artifactId: artifact.id, runId, runUrl: run.html_url });
+    return res.json({ status: 'success', message: `APK generated successfully (${(artifact.size_in_bytes / 1048576).toFixed(2)} MB).`, downloadUrl, directApkUrl: `https://raw.githubusercontent.com/${GITHUB_REPO}/main/downloads/URL2APK-latest.apk`, artifactId: artifact.id, runId, runUrl: run.html_url });
   } catch (error) {
     console.error(error);
     return res.status(502).json({ error: 'Failed to check build status.', message: error instanceof Error ? error.message : 'Unknown GitHub error.' });
@@ -127,7 +127,7 @@ app.get('/api/download-artifact', async (req: Request, res: Response) => {
       const finalRes = await fetch(location);
       if (!finalRes.ok) throw new Error('Failed to download from blob storage');
       res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', 'attachment; filename=app-release.zip');
+      res.setHeader('Content-Disposition', 'attachment; filename=URL2APK.zip');
       const { Readable } = await import('stream');
       Readable.fromWeb(finalRes.body as any).pipe(res);
       return;
@@ -137,7 +137,7 @@ app.get('/api/download-artifact', async (req: Request, res: Response) => {
       return;
     }
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename=app-release.zip');
+    res.setHeader('Content-Disposition', 'attachment; filename=URL2APK.zip');
     const { Readable } = await import('stream');
     Readable.fromWeb(downloadRes.body as any).pipe(res);
   } catch (err) {
