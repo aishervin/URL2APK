@@ -79,7 +79,7 @@ app.post('/api/build-apk', async (req: Request, res: Response<AppBuilderResponse
     return res.json({ status: run.status as AppBuilderResponse['status'], message: 'Build started on GitHub Actions.', runId: run.id, runUrl: run.html_url });
   } catch (error) {
     console.error(error);
-    return res.status(502).json({ error: 'Failed to trigger GitHub Actions.', message: error instanceof Error ? error.message : 'Unknown GitHub error.' });
+    return res.status(400).json({ error: 'Failed to trigger GitHub Actions.', message: error instanceof Error ? error.message : 'Unknown GitHub error.' });
   }
 });
 
@@ -108,7 +108,7 @@ app.get('/api/build-status/:runId', async (req: Request, res: Response<AppBuilde
     return res.json({ status: 'success', message: `APK generated successfully (${(artifact.size_in_bytes / 1048576).toFixed(2)} MB).`, downloadUrl, directApkUrl: `https://raw.githubusercontent.com/${GITHUB_REPO}/main/downloads/URL2APK-latest.apk`, artifactId: artifact.id, runId, runUrl: run.html_url });
   } catch (error) {
     console.error(error);
-    return res.status(502).json({ error: 'Failed to check build status.', message: error instanceof Error ? error.message : 'Unknown GitHub error.' });
+    return res.status(400).json({ error: 'Failed to check build status.', message: error instanceof Error ? error.message : 'Unknown GitHub error.' });
   }
 });
 
