@@ -146,11 +146,10 @@ jobs:
             </style>
           </resources>''', encoding='utf-8')
 
-          Path('settings.gradle').write_text("""pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
-dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
-rootProject.name='URL2APK'
-include ':app'
-""", encoding='utf-8')
+          Path('settings.gradle').write_text("pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\n" +
+          "dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }\n" +
+          "rootProject.name='URL2APK'\n" +
+          "include ':app'\n", encoding='utf-8')
 
           Path('build.gradle').write_text("plugins { id 'com.android.application' version '8.7.3' apply false }\n", encoding='utf-8')
           Path('app/build.gradle').write_text(f"""plugins {{ id 'com.android.application' }}
