@@ -1,9 +1,0 @@
-name: Test Env
-on: push
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "$ANDROID_HOME"
-      - run: ls -la $ANDROID_HOME/cmdline-tools || true
-      - run: ls -la $ANDROID_HOME/cmdline-tools/latest/bin || true
