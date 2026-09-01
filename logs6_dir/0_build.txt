@@ -1,0 +1,35 @@
+﻿2026-08-31T23:06:12.0239595Z Current runner version: '2.337.0'
+2026-08-31T23:06:12.0278018Z ##[group]Runner Image Provisioner
+2026-08-31T23:06:12.0279707Z Hosted Compute Agent
+2026-08-31T23:06:12.0280929Z Version: 20260819.586
+2026-08-31T23:06:12.0282512Z Commit: 3cc4a88dfa507ef76119ad1bb3eccc6378bb2b76
+2026-08-31T23:06:12.0283950Z Build Date: 2026-08-18T23:20:18Z
+2026-08-31T23:06:12.0285293Z Worker ID: {216e26a0-64cc-49f9-a175-513f471305d0}
+2026-08-31T23:06:12.0286613Z Azure Region: westus3
+2026-08-31T23:06:12.0287761Z ##[endgroup]
+2026-08-31T23:06:12.0290105Z ##[group]Operating System
+2026-08-31T23:06:12.0291262Z Ubuntu
+2026-08-31T23:06:12.0292741Z 24.04.4
+2026-08-31T23:06:12.0293638Z LTS
+2026-08-31T23:06:12.0294641Z ##[endgroup]
+2026-08-31T23:06:12.0295666Z ##[group]Runner Image
+2026-08-31T23:06:12.0296802Z Image: ubuntu-24.04
+2026-08-31T23:06:12.0297926Z Version: 20260823.283.1
+2026-08-31T23:06:12.0300169Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260823.283/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-31T23:06:12.0303506Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260823.283
+2026-08-31T23:06:12.0305360Z ##[endgroup]
+2026-08-31T23:06:12.0307491Z ##[group]GITHUB_TOKEN Permissions
+2026-08-31T23:06:12.0310781Z Contents: read
+2026-08-31T23:06:12.0312336Z Metadata: read
+2026-08-31T23:06:12.0313411Z Packages: read
+2026-08-31T23:06:12.0314364Z ##[endgroup]
+2026-08-31T23:06:12.0334171Z Secret source: Actions
+2026-08-31T23:06:12.0335918Z Prepare workflow directory
+2026-08-31T23:06:12.0964829Z Prepare all required actions
+2026-08-31T23:06:12.1216072Z Complete job name: build
+2026-08-31T23:06:12.2992622Z ##[group]Run find $ANDROID_HOME -name "sdkmanager"
+2026-08-31T23:06:12.2994125Z [36;1mfind $ANDROID_HOME -name "sdkmanager"[0m
+2026-08-31T23:06:12.3751624Z shell: /usr/bin/bash -e {0}
+2026-08-31T23:06:12.3753319Z ##[endgroup]
+2026-08-31T23:06:33.0980312Z /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager
+2026-08-31T23:06:33.1140953Z Cleaning up orphan processes

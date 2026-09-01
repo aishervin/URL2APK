@@ -1,0 +1,40 @@
+﻿2026-08-31T23:31:43.5473087Z Current runner version: '2.337.0'
+2026-08-31T23:31:43.5509653Z ##[group]Runner Image Provisioner
+2026-08-31T23:31:43.5510992Z Hosted Compute Agent
+2026-08-31T23:31:43.5512038Z Version: 20260819.586
+2026-08-31T23:31:43.5513060Z Commit: 3cc4a88dfa507ef76119ad1bb3eccc6378bb2b76
+2026-08-31T23:31:43.5514343Z Build Date: 2026-08-18T23:20:18Z
+2026-08-31T23:31:43.5515851Z Worker ID: {4d636edb-9da7-4293-8b1b-2239ef2f379f}
+2026-08-31T23:31:43.5517279Z Azure Region: eastus
+2026-08-31T23:31:43.5518412Z ##[endgroup]
+2026-08-31T23:31:43.5521090Z ##[group]Operating System
+2026-08-31T23:31:43.5522361Z Ubuntu
+2026-08-31T23:31:43.5523373Z 24.04.4
+2026-08-31T23:31:43.5524352Z LTS
+2026-08-31T23:31:43.5525765Z ##[endgroup]
+2026-08-31T23:31:43.5526701Z ##[group]Runner Image
+2026-08-31T23:31:43.5527910Z Image: ubuntu-24.04
+2026-08-31T23:31:43.5528957Z Version: 20260823.283.1
+2026-08-31T23:31:43.5531203Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260823.283/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-31T23:31:43.5534034Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260823.283
+2026-08-31T23:31:43.5536111Z ##[endgroup]
+2026-08-31T23:31:43.5538158Z ##[group]GITHUB_TOKEN Permissions
+2026-08-31T23:31:43.5540940Z Contents: read
+2026-08-31T23:31:43.5541859Z Metadata: read
+2026-08-31T23:31:43.5542936Z Packages: read
+2026-08-31T23:31:43.5543868Z ##[endgroup]
+2026-08-31T23:31:43.5548375Z Secret source: Actions
+2026-08-31T23:31:43.5550359Z Prepare workflow directory
+2026-08-31T23:31:43.6037819Z Prepare all required actions
+2026-08-31T23:31:43.6338394Z Complete job name: build
+2026-08-31T23:31:43.8057241Z ##[group]Run ls -la /usr/local/lib/android/sdk/cmdline-tools/
+2026-08-31T23:31:43.8058942Z [36;1mls -la /usr/local/lib/android/sdk/cmdline-tools/[0m
+2026-08-31T23:31:43.8060634Z [36;1mls -la /usr/local/lib/android/sdk/cmdline-tools/*/bin/sdkmanager || true[0m
+2026-08-31T23:31:43.8550066Z shell: /usr/bin/bash -e {0}
+2026-08-31T23:31:43.8551097Z ##[endgroup]
+2026-08-31T23:31:43.9001577Z total 12
+2026-08-31T23:31:43.9002242Z drwxrwxrwx  3 root root 4096 Aug 23 21:29 .
+2026-08-31T23:31:43.9003142Z drwxrwxrwx 11 root root 4096 Aug 23 21:34 ..
+2026-08-31T23:31:43.9003899Z drwxrwxrwx  4 root root 4096 Aug 23 21:29 latest
+2026-08-31T23:31:43.9008261Z -rwxrwxrwx 1 root root 5319 Jan  1  2010 /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager
+2026-08-31T23:31:43.9158498Z Cleaning up orphan processes

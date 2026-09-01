@@ -1,0 +1,30 @@
+﻿2026-08-31T22:47:15.7867541Z Current runner version: '2.336.0'
+2026-08-31T22:47:15.7905120Z ##[group]Runner Image Provisioner
+2026-08-31T22:47:15.7906633Z Hosted Compute Agent
+2026-08-31T22:47:15.7908709Z Version: 20260819.586
+2026-08-31T22:47:15.7910545Z Commit: 3cc4a88dfa507ef76119ad1bb3eccc6378bb2b76
+2026-08-31T22:47:15.7911966Z Build Date: 2026-08-18T23:20:18Z
+2026-08-31T22:47:15.7913186Z Worker ID: {c841d043-f6c1-4344-939c-9da75bc38d47}
+2026-08-31T22:47:15.7914416Z Azure Region: westus
+2026-08-31T22:47:15.7915333Z ##[endgroup]
+2026-08-31T22:47:15.7928678Z ##[group]Operating System
+2026-08-31T22:47:15.7929791Z Ubuntu
+2026-08-31T22:47:15.7930991Z 24.04.4
+2026-08-31T22:47:15.7932057Z LTS
+2026-08-31T22:47:15.7932939Z ##[endgroup]
+2026-08-31T22:47:15.7934010Z ##[group]Runner Image
+2026-08-31T22:47:15.7935140Z Image: ubuntu-24.04
+2026-08-31T22:47:15.7936064Z Version: 20260823.283.1
+2026-08-31T22:47:15.7938328Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260823.283/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-31T22:47:15.7941427Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260823.283
+2026-08-31T22:47:15.7943234Z ##[endgroup]
+2026-08-31T22:47:15.7945373Z ##[group]GITHUB_TOKEN Permissions
+2026-08-31T22:47:15.7948535Z Contents: read
+2026-08-31T22:47:15.7949501Z Metadata: read
+2026-08-31T22:47:15.7971216Z Packages: read
+2026-08-31T22:47:15.7972185Z ##[endgroup]
+2026-08-31T22:47:15.7975233Z Secret source: Actions
+2026-08-31T22:47:15.7977399Z Prepare workflow directory
+2026-08-31T22:47:15.9726767Z Prepare all required actions
+2026-08-31T22:47:15.9918379Z Getting action download info
+2026-08-31T22:47:16.3873724Z ##[error]Unable to resolve action `sharadcodes/pwa-to-apk-action@v1`, unable to find version `v1`

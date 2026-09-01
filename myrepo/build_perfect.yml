@@ -13,17 +13,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup bubblewrap
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Generate Key
         run: |
-          mkdir -p ~/.bubblewrap
-          sudo mkdir -p $ANDROID_HOME/tools
-          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
-          npm i -g @bubblewrap/cli
+          keytool -genkey -v -keystore key.keystore -alias my-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=US"
 
       - name: Create TWA Manifest
         run: |
-          mkdir pwa-project
-          cd pwa-project
           HOST=$(echo "${{ github.event.inputs.url }}" | sed -e 's|^[^/]*//||' -e 's|/.*$||')
           PKG="com.web2apk.$(echo $HOST | tr -dc 'a-zA-Z0-9' | tr '[:upper:]' '[:lower:]')"
           
@@ -33,8 +42,6 @@ jobs:
             "host": "$HOST",
             "name": "${{ github.event.inputs.appName }}",
             "launcherName": "${{ github.event.inputs.appName }}",
-            "appVersion": "1.0.0",
-            "appVersionCode": 1,
             "themeColor": "#FFFFFF",
             "navigationColor": "#000000",
             "backgroundColor": "#FFFFFF",
@@ -46,17 +53,13 @@ jobs:
             "features": {}
           }
           MANIFEST
-
-      - name: Build APK using bubblewrap
+          
+      - name: Build APK
         run: |
-          cd pwa-project
-          # By providing an empty string to yes, any unexpected prompt defaults. 
-          # Since the project is empty, it shouldn't prompt for version.
-          # Also passing --skipPwaValidation and --skipSigning for local tests.
-          yes "" | bubblewrap build --skipPwaValidation
+          yes | bubblewrap build --keyStore key.keystore --alias my-alias --keyPassword password --storePassword password --skipValidation
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: pwa-project/*.apk
+          path: app-release-signed.apk

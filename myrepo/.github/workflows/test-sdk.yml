@@ -1,0 +1,22 @@
+name: Test SDK
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Android SDK
+        run: |
+          set -e
+          ls -la /usr/local/lib/android/sdk || true
+
+      - name: Setup Bubblewrap
+        run: |
+          set -e
+          npm i -g @bubblewrap/cli
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
+          cat ~/.bubblewrap/config.json
+
+      - name: Test Bubblewrap Android command
+        run: |
+          npx @bubblewrap/core android || true

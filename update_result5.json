@@ -1,0 +1,53 @@
+{
+  "content": {
+    "name": "build.yml",
+    "path": ".github/workflows/build.yml",
+    "sha": "bd5a17c42232b3e845711b193be9f34722d28ae0",
+    "size": 2245,
+    "url": "https://api.github.com/repos/aishervin/URL2APK/contents/.github/workflows/build.yml?ref=main",
+    "html_url": "https://github.com/aishervin/URL2APK/blob/main/.github/workflows/build.yml",
+    "git_url": "https://api.github.com/repos/aishervin/URL2APK/git/blobs/bd5a17c42232b3e845711b193be9f34722d28ae0",
+    "download_url": "https://raw.githubusercontent.com/aishervin/URL2APK/main/.github/workflows/build.yml?token=CHFFCAHOINTZPCOSCQQAIJ3KSYB5A",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/aishervin/URL2APK/contents/.github/workflows/build.yml?ref=main",
+      "git": "https://api.github.com/repos/aishervin/URL2APK/git/blobs/bd5a17c42232b3e845711b193be9f34722d28ae0",
+      "html": "https://github.com/aishervin/URL2APK/blob/main/.github/workflows/build.yml"
+    }
+  },
+  "commit": {
+    "sha": "4308a48bd5f1bed43c6291ebcdb16b21d563a571",
+    "node_id": "C_kwDOUKNVsdoAKDQzMDhhNDhiZDVmMWJlZDQzYzYyOTFlYmNkYjE2YjIxZDU2M2E1NzE",
+    "url": "https://api.github.com/repos/aishervin/URL2APK/git/commits/4308a48bd5f1bed43c6291ebcdb16b21d563a571",
+    "html_url": "https://github.com/aishervin/URL2APK/commit/4308a48bd5f1bed43c6291ebcdb16b21d563a571",
+    "author": {
+      "name": "SHΞЯVIN™",
+      "email": "cyphergeminis@gmail.com",
+      "date": "2026-08-31T22:43:31Z"
+    },
+    "committer": {
+      "name": "SHΞЯVIN™",
+      "email": "cyphergeminis@gmail.com",
+      "date": "2026-08-31T22:43:31Z"
+    },
+    "tree": {
+      "sha": "99acdd986c68b9e9eb7c25e5de03455747091d59",
+      "url": "https://api.github.com/repos/aishervin/URL2APK/git/trees/99acdd986c68b9e9eb7c25e5de03455747091d59"
+    },
+    "message": "Use slow echo for interactive prompts",
+    "parents": [
+      {
+        "sha": "f5d58a89279cbf46771f88d82833edce3cb540b6",
+        "url": "https://api.github.com/repos/aishervin/URL2APK/git/commits/f5d58a89279cbf46771f88d82833edce3cb540b6",
+        "html_url": "https://github.com/aishervin/URL2APK/commit/f5d58a89279cbf46771f88d82833edce3cb540b6"
+      }
+    ],
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  }
+}

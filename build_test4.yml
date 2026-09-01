@@ -1,19 +1,10 @@
-name: Build APK
-on:
-  workflow_dispatch:
-    inputs:
-      url:
-        description: 'Website URL'
-        required: true
-      appName:
-        description: 'App Name'
-        required: true
-
+name: Build APK test 4
+on: push
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup bubblewrap
+      - name: Setup environment and Bubblewrap
         run: |
           mkdir -p ~/.bubblewrap
           sudo mkdir -p $ANDROID_HOME/tools
@@ -24,15 +15,15 @@ jobs:
         run: |
           mkdir pwa-project
           cd pwa-project
-          HOST=$(echo "${{ github.event.inputs.url }}" | sed -e 's|^[^/]*//||' -e 's|/.*$||')
-          PKG="com.web2apk.$(echo $HOST | tr -dc 'a-zA-Z0-9' | tr '[:upper:]' '[:lower:]')"
+          HOST="example.com"
+          PKG="com.example.app"
           
           cat > twa-manifest.json <<MANIFEST
           {
             "packageId": "$PKG",
             "host": "$HOST",
-            "name": "${{ github.event.inputs.appName }}",
-            "launcherName": "${{ github.event.inputs.appName }}",
+            "name": "Test App",
+            "launcherName": "Test App",
             "appVersion": "1.0.0",
             "appVersionCode": 1,
             "themeColor": "#FFFFFF",
@@ -47,16 +38,13 @@ jobs:
           }
           MANIFEST
 
-      - name: Build APK using bubblewrap
+      - name: Generate and Build APK
         run: |
           cd pwa-project
-          # By providing an empty string to yes, any unexpected prompt defaults. 
-          # Since the project is empty, it shouldn't prompt for version.
-          # Also passing --skipPwaValidation and --skipSigning for local tests.
-          yes "" | bubblewrap build --skipPwaValidation
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release
-          path: pwa-project/*.apk
+          # Answer Y to regenerate project, 1.0.0 for version name, 1 for version code
+          cat > answers.txt <<ANSWERS
+          Y
+          1.0.0
+          1
+          ANSWERS
+          bubblewrap build < answers.txt || bubblewrap build < /dev/null

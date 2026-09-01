@@ -1,0 +1,53 @@
+{
+  "content": {
+    "name": "build.yml",
+    "path": ".github/workflows/build.yml",
+    "sha": "594be5ff11f9e4faf496423e0a0958b6fc2839c0",
+    "size": 2122,
+    "url": "https://api.github.com/repos/aishervin/web2apk-builder/contents/.github/workflows/build.yml?ref=main",
+    "html_url": "https://github.com/aishervin/web2apk-builder/blob/main/.github/workflows/build.yml",
+    "git_url": "https://api.github.com/repos/aishervin/web2apk-builder/git/blobs/594be5ff11f9e4faf496423e0a0958b6fc2839c0",
+    "download_url": "https://raw.githubusercontent.com/aishervin/web2apk-builder/main/.github/workflows/build.yml?token=CHFFCACYYFNXW5V2GN26YVTKSX6VK",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/aishervin/web2apk-builder/contents/.github/workflows/build.yml?ref=main",
+      "git": "https://api.github.com/repos/aishervin/web2apk-builder/git/blobs/594be5ff11f9e4faf496423e0a0958b6fc2839c0",
+      "html": "https://github.com/aishervin/web2apk-builder/blob/main/.github/workflows/build.yml"
+    }
+  },
+  "commit": {
+    "sha": "b7904890c0f7a9730e5d2f2140c66ee85c2fa2d5",
+    "node_id": "C_kwDOUKNRs9oAKGI3OTA0ODkwYzBmN2E5NzMwZTVkMmYyMTQwYzY2ZWU4NWMyZmEyZDU",
+    "url": "https://api.github.com/repos/aishervin/web2apk-builder/git/commits/b7904890c0f7a9730e5d2f2140c66ee85c2fa2d5",
+    "html_url": "https://github.com/aishervin/web2apk-builder/commit/b7904890c0f7a9730e5d2f2140c66ee85c2fa2d5",
+    "author": {
+      "name": "SHΞЯVIN™",
+      "email": "cyphergeminis@gmail.com",
+      "date": "2026-08-31T22:15:53Z"
+    },
+    "committer": {
+      "name": "SHΞЯVIN™",
+      "email": "cyphergeminis@gmail.com",
+      "date": "2026-08-31T22:15:53Z"
+    },
+    "tree": {
+      "sha": "683e6423026f4ad6eb3f2b165fa2dacd1d3dc0fd",
+      "url": "https://api.github.com/repos/aishervin/web2apk-builder/git/trees/683e6423026f4ad6eb3f2b165fa2dacd1d3dc0fd"
+    },
+    "message": "Remove manual config.json to let bubblewrap download SDK",
+    "parents": [
+      {
+        "sha": "626809de4fe7b81bb3629a5af17c45da6b43d889",
+        "url": "https://api.github.com/repos/aishervin/web2apk-builder/git/commits/626809de4fe7b81bb3629a5af17c45da6b43d889",
+        "html_url": "https://github.com/aishervin/web2apk-builder/commit/626809de4fe7b81bb3629a5af17c45da6b43d889"
+      }
+    ],
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  }
+}

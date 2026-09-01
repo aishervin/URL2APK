@@ -1,0 +1,58 @@
+﻿2026-08-31T23:08:49.3670737Z Current runner version: '2.337.0'
+2026-08-31T23:08:49.3720952Z ##[group]Runner Image Provisioner
+2026-08-31T23:08:49.3721950Z Hosted Compute Agent
+2026-08-31T23:08:49.3722663Z Version: 20260819.586
+2026-08-31T23:08:49.3723538Z Commit: 3cc4a88dfa507ef76119ad1bb3eccc6378bb2b76
+2026-08-31T23:08:49.3724449Z Build Date: 2026-08-18T23:20:18Z
+2026-08-31T23:08:49.3725259Z Worker ID: {e1837f84-a215-4b94-ba91-866a970243ae}
+2026-08-31T23:08:49.3726319Z Azure Region: eastus
+2026-08-31T23:08:49.3727022Z ##[endgroup]
+2026-08-31T23:08:49.3728984Z ##[group]Operating System
+2026-08-31T23:08:49.3729747Z Ubuntu
+2026-08-31T23:08:49.3750907Z 24.04.4
+2026-08-31T23:08:49.3751562Z LTS
+2026-08-31T23:08:49.3752210Z ##[endgroup]
+2026-08-31T23:08:49.3752937Z ##[group]Runner Image
+2026-08-31T23:08:49.3753670Z Image: ubuntu-24.04
+2026-08-31T23:08:49.3754416Z Version: 20260823.283.1
+2026-08-31T23:08:49.3756002Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260823.283/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-31T23:08:49.3758067Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260823.283
+2026-08-31T23:08:49.3759298Z ##[endgroup]
+2026-08-31T23:08:49.3761155Z ##[group]GITHUB_TOKEN Permissions
+2026-08-31T23:08:49.3763243Z Contents: read
+2026-08-31T23:08:49.3764596Z Metadata: read
+2026-08-31T23:08:49.3765356Z Packages: read
+2026-08-31T23:08:49.3766019Z ##[endgroup]
+2026-08-31T23:08:49.3768913Z Secret source: Actions
+2026-08-31T23:08:49.3786503Z Prepare workflow directory
+2026-08-31T23:08:49.4432350Z Prepare all required actions
+2026-08-31T23:08:49.4575068Z Complete job name: build
+2026-08-31T23:08:49.5527208Z ##[group]Run mkdir -p ~/.bubblewrap
+2026-08-31T23:08:49.5527866Z [36;1mmkdir -p ~/.bubblewrap[0m
+2026-08-31T23:08:49.5528755Z [36;1mecho "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json[0m
+2026-08-31T23:08:49.5529649Z [36;1mnpm i -g @bubblewrap/cli[0m
+2026-08-31T23:08:49.5530493Z [36;1mbubblewrap build[0m
+2026-08-31T23:08:50.2659549Z shell: /usr/bin/bash -e {0}
+2026-08-31T23:08:50.2660996Z ##[endgroup]
+2026-08-31T23:09:04.2937869Z npm warn deprecated phin@3.7.1: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+2026-08-31T23:09:04.9114282Z npm warn deprecated google-p12-pem@3.1.4: Package is no longer maintained
+2026-08-31T23:09:04.9480564Z npm warn deprecated @types/gapi.client.androidpublisher@3.0.2: use @types/gapi.client.androidpublisher-v3 instead; see https://github.com/Maxim-Mazurok/google-api-typings-generator/issues/652 for details
+2026-08-31T23:09:05.4343776Z npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-08-31T23:09:06.8581699Z 
+2026-08-31T23:09:06.8591444Z added 281 packages in 16s
+2026-08-31T23:09:06.8592113Z 
+2026-08-31T23:09:06.8594977Z 40 packages are looking for funding
+2026-08-31T23:09:06.8596131Z   run `npm fund` for details
+2026-08-31T23:09:07.6473100Z ,-----.        ,--.  ,--.  ,--.
+2026-08-31T23:09:07.6474195Z |  |) /_,--.,--|  |-.|  |-.|  |,---.,--.   ,--,--.--.,--,--.,---.
+2026-08-31T23:09:07.6475149Z |  .-.  |  ||  | .-. | .-. |  | .-. |  |.'.|  |  .--' ,-.  | .-. |
+2026-08-31T23:09:07.6475852Z |  '--' '  ''  | `-' | `-' |  \   --|   .'.   |  |  \ '-'  | '-' '
+2026-08-31T23:09:07.6476604Z `------' `----' `---' `---'`--'`----'--'   '--`--'   `--`--|  |-'
+2026-08-31T23:09:07.6477497Z                                                            `--'    
+2026-08-31T23:09:07.6603886Z 
+2026-08-31T23:09:07.6604305Z 
+2026-08-31T23:09:07.6708247Z [7mcli[0m [31mERROR The provided androidSdk isn't correct.[0m
+2026-08-31T23:09:07.6708878Z 
+2026-08-31T23:09:07.6708886Z 
+2026-08-31T23:09:07.6778021Z ##[error]Process completed with exit code 1.
+2026-08-31T23:09:07.6909592Z Cleaning up orphan processes

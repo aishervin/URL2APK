@@ -1,0 +1,53 @@
+{
+  "content": {
+    "name": "build.yml",
+    "path": ".github/workflows/build.yml",
+    "sha": "8b95453a56479636017dba5de502e55981924ad6",
+    "size": 2190,
+    "url": "https://api.github.com/repos/aishervin/web2apk-builder/contents/.github/workflows/build.yml?ref=main",
+    "html_url": "https://github.com/aishervin/web2apk-builder/blob/main/.github/workflows/build.yml",
+    "git_url": "https://api.github.com/repos/aishervin/web2apk-builder/git/blobs/8b95453a56479636017dba5de502e55981924ad6",
+    "download_url": "https://raw.githubusercontent.com/aishervin/web2apk-builder/main/.github/workflows/build.yml?token=CHFFCAENWG5PRJFT6265YOTKSX6WM",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/aishervin/web2apk-builder/contents/.github/workflows/build.yml?ref=main",
+      "git": "https://api.github.com/repos/aishervin/web2apk-builder/git/blobs/8b95453a56479636017dba5de502e55981924ad6",
+      "html": "https://github.com/aishervin/web2apk-builder/blob/main/.github/workflows/build.yml"
+    }
+  },
+  "commit": {
+    "sha": "58947d336813e8417a134c1fbe3658943b69e937",
+    "node_id": "C_kwDOUKNRs9oAKDU4OTQ3ZDMzNjgxM2U4NDE3YTEzNGMxZmJlMzY1ODk0M2I2OWU5Mzc",
+    "url": "https://api.github.com/repos/aishervin/web2apk-builder/git/commits/58947d336813e8417a134c1fbe3658943b69e937",
+    "html_url": "https://github.com/aishervin/web2apk-builder/commit/58947d336813e8417a134c1fbe3658943b69e937",
+    "author": {
+      "name": "SHΞЯVIN™",
+      "email": "cyphergeminis@gmail.com",
+      "date": "2026-08-31T22:16:10Z"
+    },
+    "committer": {
+      "name": "SHΞЯVIN™",
+      "email": "cyphergeminis@gmail.com",
+      "date": "2026-08-31T22:16:10Z"
+    },
+    "tree": {
+      "sha": "4a942b34fabf1a0751301c8a770b51471ff03f62",
+      "url": "https://api.github.com/repos/aishervin/web2apk-builder/git/trees/4a942b34fabf1a0751301c8a770b51471ff03f62"
+    },
+    "message": "Add appVersion to manifest to prevent prompts",
+    "parents": [
+      {
+        "sha": "b7904890c0f7a9730e5d2f2140c66ee85c2fa2d5",
+        "url": "https://api.github.com/repos/aishervin/web2apk-builder/git/commits/b7904890c0f7a9730e5d2f2140c66ee85c2fa2d5",
+        "html_url": "https://github.com/aishervin/web2apk-builder/commit/b7904890c0f7a9730e5d2f2140c66ee85c2fa2d5"
+      }
+    ],
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  }
+}

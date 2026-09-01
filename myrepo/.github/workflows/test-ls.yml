@@ -1,0 +1,9 @@
+name: Test LS
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          ls -la /usr/local/lib/android/sdk/cmdline-tools/
+          ls -la /usr/local/lib/android/sdk/cmdline-tools/*/bin/sdkmanager || true

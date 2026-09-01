@@ -2,7 +2,5 @@
   "name": "Web2APK Converter",
   "description": "Convert any website into a fully functional Android APK file.",
   "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
