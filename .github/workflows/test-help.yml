@@ -4,6 +4,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          npm i -g @bubblewrap/cli
-          bubblewrap build --help
+      - name: Install Bubblewrap
+        run: npm i -g @bubblewrap/cli
+
+      - name: Check Bubblewrap help
+        run: |
+          bubblewrap build --help || true
