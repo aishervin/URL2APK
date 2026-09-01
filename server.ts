@@ -10,7 +10,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
-const PORT = Number.parseInt(process.env.PORT ?? '3000', 10) || 3000;
+const PORT = 3000;
 
 app.disable('x-powered-by');
 app.use(cors());
@@ -146,8 +146,22 @@ app.get('/api/download-artifact', async (req: Request, res: Response) => {
   }
 });
 
-const staticPath = path.join(__dirname, 'static');
-app.use(express.static(staticPath));
-app.get('*', (_req: Request, res: Response) => res.sendFile(path.join(staticPath, 'index.html')));
+async function startServer() {
+  if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    const staticPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(staticPath));
+    app.get('*', (_req: Request, res: Response) => res.sendFile(path.join(staticPath, 'index.html')));
+  }
+  
+  
+}
+startServer();
 
 app.listen(PORT, '0.0.0.0', () => console.log(`URL2APK server listening on port ${PORT}`));
