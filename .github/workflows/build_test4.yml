@@ -6,18 +6,18 @@ jobs:
     steps:
       - name: Setup environment and Bubblewrap
         run: |
+          set -e
           mkdir -p ~/.bubblewrap
-          sudo mkdir -p $ANDROID_HOME/tools
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
           npm i -g @bubblewrap/cli
 
       - name: Create TWA Manifest
         run: |
-          mkdir pwa-project
+          mkdir -p pwa-project
           cd pwa-project
           HOST="example.com"
           PKG="com.example.app"
-          
+
           cat > twa-manifest.json <<MANIFEST
           {
             "packageId": "$PKG",
@@ -41,10 +41,4 @@ jobs:
       - name: Generate and Build APK
         run: |
           cd pwa-project
-          # Answer Y to regenerate project, 1.0.0 for version name, 1 for version code
-          cat > answers.txt <<ANSWERS
-          Y
-          1.0.0
-          1
-          ANSWERS
-          bubblewrap build < answers.txt || bubblewrap build < /dev/null
+          bubblewrap build --skipInstallDeps --directory . 2>&1 | head -100 || true
