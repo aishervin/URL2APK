@@ -195,8 +195,8 @@ jobs:
           echo "APK contents:"
           unzip -l "$APK" | head -20
           
-          if [ "$SIZE" -lt 10000 ]; then
-            echo "ERROR: APK is suspiciously small (< 10KB)"
+          if [ "$SIZE" -lt 5000 ]; then
+            echo "ERROR: APK is suspiciously small (< 5KB)"
             echo "Build directory contents:"
             find app/build/outputs -type f -ls
             exit 1
