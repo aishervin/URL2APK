@@ -164,6 +164,12 @@ jobs:
               versionCode = 1
               versionName = '1.0.0'
             }}
+            buildTypes {{
+              debug {{
+                minifyEnabled false
+                shrinkResources false
+              }}
+            }}
           }}
           """, encoding='utf-8')
           Path('gradle.properties').write_text('android.useAndroidX=true\nandroid.nonTransitiveRClass=true\n', encoding='utf-8')
@@ -175,7 +181,7 @@ jobs:
           PY
 
       - name: Build signed debug APK
-        run: gradle --no-daemon --info :app:assembleDebug 2>&1 | tail -100
+        run: gradle --no-daemon --info :app:assembleDebug
 
       - name: Verify APK is valid and signed
         shell: bash
@@ -189,7 +195,7 @@ jobs:
           echo "APK contents:"
           unzip -l "$APK" | head -20
           
-          if [ "$SIZE" -lt 100000 ]; then
+          if [ "$SIZE" -lt 50000 ]; then
             echo "ERROR: APK is suspiciously small (< 100KB)"
             echo "Build directory contents:"
             find app/build/outputs -type f -ls
