@@ -159,9 +159,6 @@ async function startServer() {
     app.use(express.static(staticPath));
     app.get('*', (_req: Request, res: Response) => res.sendFile(path.join(staticPath, 'index.html')));
   }
-  
-  
+  app.listen(PORT, '0.0.0.0', () => console.log(`URL2APK server listening on port ${PORT}`));
 }
 startServer();
-
-app.listen(PORT, '0.0.0.0', () => console.log(`URL2APK server listening on port ${PORT}`));
