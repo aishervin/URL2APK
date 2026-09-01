@@ -1,0 +1,14 @@
+{
+  "name": "SHEN Project",
+  "version": "1.0.0",
+  "type": "webview",
+  "targets": ["android-apk"],
+  "features": {
+    "importer": true,
+    "aiAgent": true,
+    "githubWorkspace": true
+  },
+  "android": {
+    "package": "com.shen.droid"
+  }
+}
